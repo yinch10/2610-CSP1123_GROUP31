@@ -1,21 +1,20 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
+# 1. Home Route
 @app.route('/')
 def home():
-    # This looks inside the 'templates' folder for your file
-    return render_template('index.html') 
+    return render_template('index.html')
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-from flask import Flask, render_template, request, redirect, url_for
-# We will add Flask-Login later, for now just render the page
-
+# 2. Login Route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # This is where your logic will go later to check passwords
+        # Logical check will go here later
         return redirect(url_for('home'))
     return render_template('login.html')
+
+# 3. Start the Server (Must always be at the bottom!)
+if __name__ == '__main__':
+    app.run(debug=True)

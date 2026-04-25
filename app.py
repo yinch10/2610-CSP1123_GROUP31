@@ -1,23 +1,24 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# 1. Database Configuration
+# 1. Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'ben_chow_secret_key' # Needed for flash messages
 
-# 2. Initialize SQLAlchemy with the app
+# 2. Initialize Database
 db = SQLAlchemy(app) 
 
-# 3. Define the User model
+# 3. User Model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
-# 4. Create the database tables
+# 4. Create Tables
 with app.app_context():
     db.create_all()
 
@@ -25,6 +26,7 @@ with app.app_context():
 
 @app.route('/')
 def home():
+    # If index.html doesn't exist yet, you can use: return redirect(url_for('login'))
     return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -35,12 +37,11 @@ def login():
 
         user = User.query.filter_by(email=login_email).first()
 
-        # ADD THIS LINE TO DEBUG:
-        print(f"Login Attempt: {login_email}, Found User: {user}")
-
         if user and user.password == login_password:
-            return redirect(url_for('home'))
-        # ... rest of your code
+            return redirect(url_for('dashboard'))
+        else:
+            flash("Invalid email or password. Please try again.", "danger")
+            return redirect(url_for('login'))
 
     return render_template('login.html')
 
@@ -51,14 +52,30 @@ def register():
         new_email = request.form.get('email')
         new_password = request.form.get('password')
 
-        new_user = User(name=new_name, email=new_email, password=new_password)
+        # Check if email already exists to avoid errors
+        existing_user = User.query.filter_by(email=new_email).first()
+        if existing_user:
+            flash("Email already registered!", "warning")
+            return redirect(url_for('register'))
 
+        new_user = User(name=new_name, email=new_email, password=new_password)
         db.session.add(new_user)
         db.session.commit()
 
+        flash("Account created! Please login.", "success")
         return redirect(url_for('login'))
+        
     return render_template('register.html')
 
-# 5. Start the Server
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/logout')
+def logout():
+    flash("You have been logged out.", "info")
+    return redirect(url_for('login'))
+
+# 5. Start the Server (Must be the very last thing!)
 if __name__ == '__main__':
     app.run(debug=True)

@@ -22,11 +22,16 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/input">Analyze Question</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
-                </ul>
+    {% if session['user_name'] %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li class="nav-item">
+            <a class="btn btn-outline-danger btn-sm ms-lg-2" href="{{ url_for('logout') }}">Logout</a>
+        </li>
+    {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
+    {% endif %}
+</ul>
             </div>
         </div>
     </nav>
@@ -50,9 +55,9 @@
 </body>
 </html>
 
-<div class="text-center py-5">
-    <h1 class="display-5 fw-bold">Welcome, Lecturer</h1>
-    <p class="lead">Upload or input your examination questions to evaluate Bloom's Taxonomy levels.</p>
+<div class="text-center mt-4">
+    <h1 class="display-5 fw-bold">Welcome,Mr. {{ session['user_name'] if session['user_name'] else 'Lecturer' }}</h1>
+    <p class="lead text-muted">Upload or input your examination questions to evaluate Bloom's Taxonomy levels.</p>
     <a href="/input" class="btn btn-primary btn-lg">Get Started</a>
 </div>
 

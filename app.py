@@ -29,6 +29,8 @@ def home():
     # If index.html doesn't exist yet, you can use: return redirect(url_for('login'))
     return render_template('index.html')
 
+from flask import session # Make sure to add session to your imports
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -38,9 +40,11 @@ def login():
         user = User.query.filter_by(email=login_email).first()
 
         if user and user.password == login_password:
+            # SAVE THE NAME HERE
+            session['user_name'] = user.name 
             return redirect(url_for('dashboard'))
         else:
-            flash("Invalid email or password. Please try again.", "danger")
+            flash("Invalid email or password.", "danger")
             return redirect(url_for('login'))
 
     return render_template('login.html')
@@ -69,10 +73,13 @@ def register():
 
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')
+    # Get the name from session, use 'Guest' if not found
+    name = session.get('user_name', 'Lecturer') 
+    return render_template('dashboard.html', name=name)
 
 @app.route('/logout')
 def logout():
+    session.pop('user_name', None) # This "forgets" the name
     flash("You have been logged out.", "info")
     return redirect(url_for('login'))
 
